@@ -11,6 +11,10 @@ BASIC USE
     Prints the count and saves sheep_counted.jpg next to the photo, with a dot
     on every detected sheep (red = confident, orange = borderline).
 
+    The photo can have any file name. If you leave the name out, the script
+    counts the only photo in the folder. On Windows you can also double-click
+    the script.
+
 OTHER PHOTOS
     The detector needs to know roughly how big one sheep is in pixels. The
     defaults (22 x 9 px) fit the original photo. For another photo, zoom in,
@@ -82,6 +86,22 @@ def write_image(path, img):
     if not ok:
         sys.exit(f"Could not save {path}")
     buf.tofile(path)
+
+
+def find_photo():
+    """Used when no photo is given: take the only photo in the current folder
+    (or the script's folder), ignoring images this script produced."""
+    exts = (".jpg", ".jpeg", ".png", ".tif", ".tiff", ".bmp")
+    folders = dict.fromkeys([os.getcwd(), os.path.dirname(os.path.abspath(__file__))])
+    for folder in folders:
+        photos = sorted(f for f in os.listdir(folder)
+                        if f.lower().endswith(exts) and "_counted" not in f.lower())
+        if len(photos) == 1:
+            return os.path.join(folder, photos[0])
+        if len(photos) > 1:
+            sys.exit("Found several photos: " + ", ".join(photos) +
+                     "\nSay which one to count, e.g.  python count_sheep.py " + photos[0])
+    sys.exit("No photo found. Put the photo in this folder, or run:  python count_sheep.py path/to/photo.jpg")
 
 
 def odd(n):
@@ -293,7 +313,7 @@ def main():
     p = argparse.ArgumentParser(description="Count white sheep in a top-down photo.",
                                 formatter_class=argparse.RawDescriptionHelpFormatter,
                                 epilog="See the top of this file for full instructions.")
-    p.add_argument("image", nargs="?", help="photo to count")
+    p.add_argument("image", nargs="?", help="photo to count (default: the only photo in this folder)")
     p.add_argument("--sheep-length", type=float, default=22, help="typical sheep length in pixels (default 22)")
     p.add_argument("--sheep-width", type=float, default=9, help="typical sheep width in pixels (default 9)")
     p.add_argument("--threshold", type=float, default=0.18, help="confidence cut-off (default 0.18)")
@@ -310,7 +330,7 @@ def main():
         evaluate(a.evaluate)
         return
     if not a.image:
-        p.error("give the photo to count, e.g.  python count_sheep.py sheep.jpg")
+        a.image = find_photo()
     if a.borderline > a.threshold:
         p.error("--borderline must be lower than --threshold")
 
@@ -358,4 +378,15 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if os.name == "nt" and len(sys.argv) == 1:
+        # Started by double-click on Windows: keep the window open to show the result
+        try:
+            main()
+        except SystemExit as e:
+            if isinstance(e.code, str):
+                print(e.code)
+        except Exception as e:
+            print(f"Error: {e}")
+        input("\nPress Enter to close...")
+    else:
+        main()

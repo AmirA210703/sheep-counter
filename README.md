@@ -2,15 +2,43 @@
 
 Counts white sheep in a top-down drone or aerial photo. It prints the count and saves a copy of the photo with a dot on every sheep it found, so you can check the result by eye.
 
-## Install
+Written with an LLM (Claude) for the assignment *Part 1: How many sheep?*, which compares counts from an LLM, a script and CountThings as audit evidence for livestock.
+
+## Quick start
 
 Requires Python 3.8 or newer.
 
+1. **Download.** Click the green **Code** button above → **Download ZIP**, and unzip it. Or clone it:
+   ```
+   git clone https://github.com/AmirA210703/sheep-counter.git
+   ```
+2. **Add the photo.** Put the sheep photo in the same folder as `count_sheep.py`. Any file name works.
+3. **Install the two packages** (once):
+
+   | Windows | Mac / Linux |
+   |---|---|
+   | `py -m pip install -r requirements.txt` | `python3 -m pip install -r requirements.txt` |
+
+4. **Run it:**
+
+   | Windows | Mac / Linux |
+   |---|---|
+   | `py count_sheep.py` | `python3 count_sheep.py` |
+
+   On Windows you can also double-click `count_sheep.py`. If the folder holds one photo, the script finds it by itself. With several photos, give the file name, e.g. `py count_sheep.py my_photo.jpg`.
+
+If pip refuses with *externally-managed-environment* (common on newer Macs), make a virtual environment first: `python3 -m venv .venv && source .venv/bin/activate`, then repeat steps 3 and 4.
+
+### Expected result on the assignment photo
+
+On the assignment photo (1942 × 1949 px) the script prints:
+
 ```
-pip install -r requirements.txt
+  Sheep counted (threshold 0.18):            3,360
+  Including borderline (threshold 0.15):    3,689
 ```
 
-On Windows, use `py -m pip install -r requirements.txt`.
+A more heavily compressed JPEG copy of the same photo gives 3,357 and 3,684. It takes a few seconds.
 
 ## Usage
 
@@ -18,13 +46,15 @@ On Windows, use `py -m pip install -r requirements.txt`.
 python count_sheep.py sheep.jpg
 ```
 
+`sheep.jpg` is just an example. Use your own file name, or leave it out to count the only photo in the folder.
+
 This prints:
 
 - **Sheep counted**: the confident detections (red dots)
 - **Including borderline**: confident + uncertain detections (red + orange dots)
 - **Sensitivity**: the count at other confidence cut-offs, so you can see how stable the number is
 
-It also saves `sheep_counted.jpg` next to the photo.
+It also saves an annotated copy named after the photo: `drone.jpg` gives `drone_counted.jpg` in the same folder.
 
 ### Other photos: set the sheep size
 
