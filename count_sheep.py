@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 count_sheep.py - count white sheep in a top-down (drone / aerial) photo.
 
@@ -13,7 +12,7 @@ BASIC USE
 
     The photo can have any file name. If you leave the name out, the script
     counts the only photo in the folder. On Windows you can also double-click
-    the script.
+    the script. If numpy or OpenCV is missing, it offers to install them.
 
 OTHER PHOTOS
     The detector needs to know roughly how big one sheep is in pixels. The
@@ -51,18 +50,64 @@ LIMITATIONS
 """
 
 import argparse
+import atexit
 import csv
+import importlib
 import math
 import os
 import random
+import site
+import subprocess
 import sys
 
-import numpy as np
+# Started by double-click on Windows (no arguments): keep the window open at
+# the end, whatever happens, so the result or any error message can be read.
+def _pause():
+    try:
+        input("\nPress Enter to close...")
+    except (EOFError, KeyboardInterrupt):
+        pass
 
-try:
-    import cv2
-except ImportError:
-    sys.exit("OpenCV is missing. Install it with:  pip install opencv-python numpy")
+
+if os.name == "nt" and len(sys.argv) == 1:
+    atexit.register(_pause)
+
+
+def ensure_packages():
+    """Check numpy and OpenCV are installed for the Python running this script,
+    and offer to install them if not."""
+    missing = []
+    for module, package in (("numpy", "numpy"), ("cv2", "opencv-python")):
+        try:
+            importlib.import_module(module)
+        except ImportError:
+            missing.append(package)
+    if not missing:
+        return
+    cmd = [sys.executable, "-m", "pip", "install"] + missing
+    verb = "are" if len(missing) > 1 else "is"
+    print("This script needs " + " and ".join(missing) + f", which {verb} not installed for this Python:")
+    print("  " + sys.executable)
+    try:
+        answer = input("Install now? [Y/n] ").strip().lower()
+    except EOFError:
+        answer = "n"
+    if answer not in ("", "y", "yes", "j", "ja"):
+        sys.exit("Install it yourself with:\n  " + subprocess.list2cmdline(cmd))
+    if subprocess.call(cmd) != 0:
+        sys.exit("Installation failed - see the messages above.")
+    # Make a freshly created user site-packages folder importable right away
+    user_site = site.getusersitepackages()
+    if os.path.isdir(user_site) and user_site not in sys.path:
+        site.addsitedir(user_site)
+    importlib.invalidate_caches()
+    print()
+
+
+ensure_packages()
+
+import numpy as np  # noqa: E402
+import cv2  # noqa: E402
 
 
 # --------------------------------------------------------------------------
@@ -378,15 +423,4 @@ def main():
 
 
 if __name__ == "__main__":
-    if os.name == "nt" and len(sys.argv) == 1:
-        # Started by double-click on Windows: keep the window open to show the result
-        try:
-            main()
-        except SystemExit as e:
-            if isinstance(e.code, str):
-                print(e.code)
-        except Exception as e:
-            print(f"Error: {e}")
-        input("\nPress Enter to close...")
-    else:
-        main()
+    main()

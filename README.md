@@ -25,7 +25,7 @@ Requires Python 3.8 or newer.
    |---|---|
    | `py count_sheep.py` | `python3 count_sheep.py` |
 
-   On Windows you can also double-click `count_sheep.py`. If the folder holds one photo, the script finds it by itself. With several photos, give the file name, e.g. `py count_sheep.py my_photo.jpg`.
+   On Windows you can also double-click `count_sheep.py`. The window stays open until you press Enter, and if numpy or OpenCV is missing the script offers to install them, so step 3 can be skipped. If the folder holds one photo, the script finds it by itself. With several photos, give the file name, e.g. `py count_sheep.py my_photo.jpg`.
 
 If pip refuses with *externally-managed-environment* (common on newer Macs), make a virtual environment first: `python3 -m venv .venv && source .venv/bin/activate`, then repeat steps 3 and 4.
 
