@@ -1,0 +1,15 @@
+# Keep photos, results and hand-count sheets out of the repository
+*.jpg
+*.jpeg
+*.png
+*.tif
+*.tiff
+*.heic
+*.csv
+*_tiles/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
